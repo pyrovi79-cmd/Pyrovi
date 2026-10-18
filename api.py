@@ -54,7 +54,7 @@ def clima_zona(zona):
          "temp_prom_max_semana":sum(datos_d["temperature_2m_max"])/len(datos_d["temperature_2m_max"])}
         cache_clima[zona] = (time.time(), datos_semanal)
         return datos_semanal
-    except (requests.RequestException, KeyError):
+    except (requests.RequestException, KeyError)as error:
         print("Error clima:", repr(error))
         raise HTTPException(status_code=502, detail="No se pudo obtener el clima") 
 def calcular_riesgos(temp_max, temp_min, precip, temp_prom_max):
