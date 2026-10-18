@@ -38,15 +38,19 @@ datos.temp_prom_max_semana)
 
 coord_zona = {"DMQ":(-0.275,-78.475) , "Junin":(-0.90,-80.175)}
 def clima_zona(zona):
-    req_meteo = requests.get(f"https://api.open-meteo.com/v1/forecast?latitude={coord_zona[zona][0]}&longitude={coord_zona[zona][1]}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&forecast_days=7&timezone=auto")
-    datos = req_meteo.json()
-    datos_d = datos["daily"]
-    datos_semanal = {"temp_max_semana":max(datos_d["temperature_2m_max"]),
+    try:
+        
+        req_meteo = requests.get(f"https://api.open-meteo.com/v1/forecast?latitude={coord_zona[zona][0]}&longitude={coord_zona[zona][1]}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&forecast_days=7&timezone=auto", timeout=6)
+        req_meteo.raise_for_status()
+        datos = req_meteo.json()
+        datos_d = datos["daily"]
+        datos_semanal = {"temp_max_semana":max(datos_d["temperature_2m_max"]),
         "temp_min_semana":sum(datos_d["temperature_2m_min"])/len(datos_d["temperature_2m_min"]),
          "precip_semana":sum(datos_d["precipitation_sum"]),
          "temp_prom_max_semana":sum(datos_d["temperature_2m_max"])/len(datos_d["temperature_2m_max"])}
-    return datos_semanal
-
+        return datos_semanal
+    except (requests.RequestException, KeyError):
+        raise HTTPException(status_code=502, detail="No se pudo obtener el clima") 
 def calcular_riesgos(temp_max, temp_min, precip, temp_prom_max):
     datos_ordenados = [temp_max,temp_min,precip,temp_prom_max]
     tensor = torch.tensor([datos_ordenados], dtype= torch.float32)
