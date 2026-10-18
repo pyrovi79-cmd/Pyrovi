@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa de riesgo de incendios</title>
+ <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+ <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script>
+     
+<style>
+    .layout{
+        display: flex;
+        gap: 16px;
+    }
+    .leaflet-tile-pane{
+        filter: brightness(0.9) 
+    }
+    body{
+    background:#0b0b0d ;   
+    color:#e8e8ea; 
+    font-family: Arial, sans-serif;
+    margin: 0;
+    }
+    h1{
+        font-size: 28px;
+       
+    }
+    header p{
+        font-size: 8px;
+        color: #B0B0B0;
+    }
+    #nombreT{
+        background: linear-gradient( #FFD100 40%,#1d69ff 35% 60%, red 60%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        font-weight: bold;
+    }
+    #mapa{
+        height: 500px;
+        border: 5px solid #2a2a30;
+        border-radius: 14px;
+        margin: 0 ;
+        flex: 1;
+    }
+    .panel{
+        width: 280px;
+        background: #2a2a30;
+        border: 1px solid #2a2a30;
+        border-radius: 16px;
+        padding: 16px;
+    }
+    .tarjeta{
+        background: #1f1f24;
+        border-radius: 14px ;
+        padding: 10px;
+        margin-top: 15px;
+    }
+    .etiqueta{
+        background: #3a3a42;
+        padding: 4px 10px;
+        text-transform: uppercase;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+    #copy{
+        text-align: center;
+    }
+    footer{
+        color: #8a8a93;
+        font-size: 10px;
+        margin: 16px 24px;
+        margin-top: 24px;
+    }
+</style>
+</head>
+<body>
+    <h1 id = "nombreT"><img src="logo.svg" alt="Logo fuego" style="height:38px; vertical-align:middle;">PYROVI</h1>
+    <p id = "subnombre">Estimación de riesgo de incendios en Ecuador 
+    </p>
+    <br>
+        <div class ="layout">
+            <div id="mapa">
+            </div>
+            <div class ="panel">
+                <h2>Zonas</h2>
+                <div class ="tarjeta">
+                    <h3 >Quito</h3>
+                        <p >Riesgo: <span class = "etiqueta" id = "riesgo-DMQ">cargando...</span></p>
+                        <p>Probabilidad: <span id = "prob-DMQ">....</span></p>
+                </div>
+                <div class = "tarjeta">
+                    <h3>Junín</h3>
+                        <p >Riesgo: <span class = "etiqueta" id = "riesgo-Junin">cargando...</span></p>
+                         <p>Probabilidad: <span  id = "prob-Junin">....</span></p>
+                    </div>
+            </div>
+        </div>
+        <footer>
+            <p id="descargo">Pyrovi muestra una estimación generada por un modelo de aprendizaje automático con datos de clima y de focos de calor satelitales. No es una predicción exacta ni reemplaza a las autoridades oficiales. No tomes decisiones de seguridad basándote solo en esta información.</p>
+            <p id="copy">©2026 Jorge Villamar</p>
+            <center><p id="TYC"><a href="TYC.html">Terminos y condiciones</a></p></center>
+        </footer>
+<script>
+        const mapa = L.map("mapa");
+        mapa.setView([-1.2, -79.0], 7);
+       L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {maxZoom: 19, attribution: "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"}).addTo(mapa);
+        const pinDMQ = L.circleMarker([-0.275,-78.475],{radius : 14, color:"grey"}).addTo(mapa);
+        const pinJunin = L.circleMarker([-0.926159, -80.205603],{radius:14, color:"grey"}).addTo(mapa);
+        
+            function datos_zonas(zona,nombre,pin) {
+                fetch("http://127.0.0.1:8000/riesgo/"+zona)
+                .then(respuesta => respuesta.json())
+                .then(datos =>{
+                const semaforo = datos.riesgo.semaforo;
+                const porcentaje = Math.round(datos.riesgo.probabilidad*100)
+                if (semaforo === "alto"){
+                    pin.setStyle({color:"red"});}
+                else if (semaforo=== "medio"){
+                    pin.setStyle({color:"yellow"});}
+                else {
+                    pin.setStyle({color: "green"});
+                     }   
+                pin.bindPopup(nombre + " probabilidad estimada :" +porcentaje+"%"+
+                     ", riesgo: " +semaforo);
+                document.getElementById("riesgo-"+zona).textContent=semaforo;           
+                if (semaforo === "alto"){
+                    document.getElementById("riesgo-"+zona).style.background ="red";}
+                else if (semaforo=== "medio"){
+                    document.getElementById("riesgo-"+zona).style.background = "#E6B800";}
+                else {
+                    document.getElementById("riesgo-"+zona).style.background ="green";
+                     }     
+                    document.getElementById("prob-"+zona).textContent= porcentaje+ "%";
+                    }
+                    )
+                    .catch(error=>
+                    {document.getElementById("riesgo-"+zona).textContent = "no disponible";
+                    document.getElementById("prob-"+zona).textContent = "no disponible";
+                    console.error(error)}
+                    )
+                    }
+        datos_zonas("DMQ","Quito",pinDMQ);
+        datos_zonas("Junin","Junín",pinJunin);
+        window.addEventListener("load", () => {
+            mapa.invalidateSize();
+                                              });
+                                    
+    </script> 
+
+    </body>
+</html>
+!
