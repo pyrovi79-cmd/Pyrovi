@@ -5,7 +5,7 @@ import torch
 import requests
 from fastapi import HTTPException 
 from fastapi.middleware.cors import CORSMiddleware
-
+import time
 class clima_semanal(BaseModel):
     temp_max_semana: float
     temp_min_semana: float
@@ -37,7 +37,11 @@ datos.temp_prom_max_semana)
 
 
 coord_zona = {"DMQ":(-0.275,-78.475) , "Junin":(-0.90,-80.175)}
+cache_clima = {}
 def clima_zona(zona):
+    if zona in cache_clima and time.time() - cache_clima[zona][0] < 1800:
+            print("usando la libreta")
+            return cache_clima[zona][1]
     try:
         
         req_meteo = requests.get(f"https://api.open-meteo.com/v1/forecast?latitude={coord_zona[zona][0]}&longitude={coord_zona[zona][1]}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&forecast_days=7&timezone=auto", timeout=6)
@@ -48,6 +52,7 @@ def clima_zona(zona):
         "temp_min_semana":sum(datos_d["temperature_2m_min"])/len(datos_d["temperature_2m_min"]),
          "precip_semana":sum(datos_d["precipitation_sum"]),
          "temp_prom_max_semana":sum(datos_d["temperature_2m_max"])/len(datos_d["temperature_2m_max"])}
+        cache_clima[zona] = (time.time(), datos_semanal)
         return datos_semanal
     except (requests.RequestException, KeyError):
         raise HTTPException(status_code=502, detail="No se pudo obtener el clima") 
