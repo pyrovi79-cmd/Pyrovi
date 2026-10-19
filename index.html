@@ -108,13 +108,14 @@
         </footer>
 <script>
         const mapa = L.map("mapa");
+        const API = "https://pyrovi-1.onrender.com";
         mapa.setView([-1.2, -79.0], 7);
        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {maxZoom: 19, attribution: "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"}).addTo(mapa);
         const pinDMQ = L.circleMarker([-0.275,-78.475],{radius : 14, color:"grey"}).addTo(mapa);
         const pinJunin = L.circleMarker([-0.926159, -80.205603],{radius:14, color:"grey"}).addTo(mapa);
         
             function datos_zonas(zona,nombre,pin) {
-                fetch("http://127.0.0.1:8000/riesgo/"+zona)
+                fetch(API+ "/riesgo/"+zona)
                 .then(respuesta => respuesta.json())
                 .then(datos =>{
                 const semaforo = datos.riesgo.semaforo;
