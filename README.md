@@ -1,4 +1,6 @@
 # Pyrovi
+## Ver en línea
+https://pyrovi79-cmd.github.io/Pyrovi/
 
 **Estimación de riesgo de incendios en Ecuador**
 
@@ -10,6 +12,7 @@
 - El umbral de 0.4 se eligió mirando el conjunto de prueba, por lo que el rendimiento real puede ser menor.
 - El modelo no conoce la zona: solo ve el clima de la semana.
 - El nivel "medio" (desde 0.25) es una decisión de diseño, no un resultado del modelo.
+- la primera carga puede tardar hasta un minuto mientras el servidor despierta
 
 ### De los datos
 
