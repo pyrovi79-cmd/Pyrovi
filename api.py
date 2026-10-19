@@ -40,18 +40,13 @@ coord_zona = {"DMQ":(-0.275,-78.475) , "Junin":(-0.90,-80.175)}
 cache_clima = {}
 def clima_zona(zona):
     if zona in cache_clima and time.time() - cache_clima[zona][0] < 1800:
-            print("usando la libreta")
+
             return cache_clima[zona][1]
     try:
-        
-        req_meteo = requests.get(f"https://api.open-meteo.com/v1/forecast?latitude={coord_zona[zona][0]}&longitude={coord_zona[zona][1]}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&forecast_days=7&timezone=auto", timeout=6)
+        req_meteo = requests.get("https://raw.githubusercontent.com/pyrovi79-cmd/Pyrovi/main/clima.json", timeout=6)
         req_meteo.raise_for_status()
         datos = req_meteo.json()
-        datos_d = datos["daily"]
-        datos_semanal = {"temp_max_semana":max(datos_d["temperature_2m_max"]),
-        "temp_min_semana":sum(datos_d["temperature_2m_min"])/len(datos_d["temperature_2m_min"]),
-         "precip_semana":sum(datos_d["precipitation_sum"]),
-         "temp_prom_max_semana":sum(datos_d["temperature_2m_max"])/len(datos_d["temperature_2m_max"])}
+        datos_semanal = datos[zona]
         cache_clima[zona] = (time.time(), datos_semanal)
         return datos_semanal
     except (requests.RequestException, KeyError)as error:
