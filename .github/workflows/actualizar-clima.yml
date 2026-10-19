@@ -1,0 +1,26 @@
+name: Actualizar clima
+
+on:
+  schedule:
+    - cron: "17 */3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - run: pip install requests==2.34.2
+      - run: python actualizar_clima.py
+      - name: Guardar cambios
+        run: |
+          git config user.name "pyrovi-bot"
+          git config user.email "pyrovi79@gmail.com"
+          git add clima.json
+          git diff --staged --quiet || (git commit -m "Actualiza clima" && git push)
