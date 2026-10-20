@@ -6,11 +6,7 @@ import requests
 from fastapi import HTTPException 
 from fastapi.middleware.cors import CORSMiddleware
 import time
-class clima_semanal(BaseModel):
-    temp_max_semana: float
-    temp_min_semana: float
-    precip_semana : float = Field(ge=0)
-    temp_prom_max_semana: float
+
 
 paquete = torch.load("modelo_riesgo.pt", weights_only= False)
 red = nn.Sequential(
@@ -27,13 +23,6 @@ app.add_middleware(
     allow_origins=["http://localhost:5500", "http://127.0.0.1:5500","https://pyrovi79-cmd.github.io"],
     allow_methods=["GET"],
 ) 
-
-@app.post("/riesgo")
-def prediccion(datos: clima_semanal):
-    return calcular_riesgos(datos.temp_max_semana,
-datos.temp_min_semana,
-datos.precip_semana,
-datos.temp_prom_max_semana)
 
 
 coord_zona = {"DMQ":(-0.275,-78.475) , "Junin":(-0.90,-80.175)}
