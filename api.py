@@ -17,7 +17,7 @@ red = nn.Sequential(
 red.load_state_dict(paquete["pesos"])
 red.eval()
 
-app = FastAPI()
+app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5500", "http://127.0.0.1:5500","https://pyrovi79-cmd.github.io"],
